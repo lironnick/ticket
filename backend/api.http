@@ -2,9 +2,9 @@ POST http://localhost:3333/events
 Content-Type: application/json
 
 {
-  "title": "teste de codigo",
-  "details": "sera que funcionou?",
-  "maximumAttendees": 1
+  "title": "Evento teste",
+  "details": "teste para no maximo 100 participantes",
+  "maximumAttendees": 100
 }
 
 ###
@@ -14,15 +14,15 @@ Content-Type: application/json
 
 {
   "name": "Tiago Henrique",
-  "email": "lironnick@gmail.com"
+  "email": "aaa@gmail.com"
 }
 
 ###
 
-GET http://localhost:3333/events/542d1846-89d6-4d5a-87b4-0548a4f6c2a7
+GET http://localhost:3333/events/adedb637-ea4e-4556-9e19-8c1cb3345362
 ###
 
-GET http://localhost:3333/attendees/1/badge
+GET http://localhost:3333/attendees/10205/badge
 ###
 
 GET http://localhost:3333/attendees/10202/check-in

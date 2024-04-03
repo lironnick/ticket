@@ -2,22 +2,66 @@ import { useState } from 'react';
 import { View, Image, StatusBar, Alert } from 'react-native';
 import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
+import axios from 'axios';
 
 import { colors } from '@/styles/colors';
+
+import { api } from '@/server/api';
+import { useBadgeStore } from '@/store/badge-store';
 
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
 
+const EVENT_ID = 'adedb637-ea4e-4556-9e19-8c1cb3345362';
+
 export default function Register() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
+  const [isLoading, setIsloading] = useState(false);
 
-  function handleRegister() {
-    if (!nome.trim() || !email.trim()) {
-      return Alert.alert('Inscrição', 'Preencha todos os campos');
+  const badgeStore = useBadgeStore();
+
+  async function handleRegister() {
+    try {
+      if (!nome.trim() || !email.trim()) {
+        return Alert.alert('Inscrição', 'Preencha todos os campos');
+      }
+
+      setIsloading(true);
+
+      const register = await api.post(`/events/${EVENT_ID}/attendees`, {
+        name: nome,
+        email,
+      });
+
+      console.log(register.data.attendeeId);
+
+      if (register.data.attendeeId) {
+        const { data } = await api.get(
+          `/attendees/${register.data.attendeeId}/badge`
+        );
+
+        badgeStore.save(data.badge);
+
+        // badgeStore
+        Alert.alert('Inscrição', 'Inscrição realizada com sucesso!', [
+          { text: 'ok', onPress: () => router.push('/ticket') },
+        ]);
+      }
+    } catch (error) {
+      console.log(error);
+
+      setIsloading(false);
+
+      if (axios.isAxiosError(error)) {
+        if (
+          String(error.response?.data.message).includes('already registered')
+        ) {
+          return Alert.alert('Inscrição', 'Este e-mail já está cadastrado!');
+        }
+      }
+      Alert.alert('Inscrição', 'Não foi possivel fazer a inscrição');
     }
-
-    router.push('/ticket');
   }
 
   return (
@@ -52,7 +96,11 @@ export default function Register() {
           />
         </Input>
 
-        <Button title="Realizar inscrição" onPress={handleRegister} />
+        <Button
+          title="Realizar inscrição"
+          onPress={handleRegister}
+          isLoading={isLoading}
+        />
 
         <Link
           href="/"
